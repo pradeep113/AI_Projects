@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="mE91232-IS0232-I92122" mainModule="Main" version="2.0" logLevel="normal" threadSafe="true">
+	<description>E91232-IS0232-I92122
+</description>
+	<module name="Main" logLevel="debug" onError="call:TransferFailure">
+			<sftp label="SFTP connect to E91232" resourceId="E91232" version="1.0">
+			<list fileListVariable="filelistonsrcserver" numFilesFoundVariable="filelistonsrcservernum">
+				<fileset dir="/sourcepath/send/dataout" recursive="false" includeItems="files">
+					<wildcardFilter>
+						<include pattern="&lt;pattern&gt;" />
+					</wildcardFilter>
+				</fileset>	
+			</list>
+		</sftp>
+		<exitProject label="EXIT if No Files" version="1.0" executeOnlyIf="${ filelistonsrcservernum eq 0 }" />
+		<createWorkspace label="Create workspace" version="1.0" />
+		<sftp label="SFTP connect to E91232" resourceId="E91232" version="1.0" disabled="false">
+			<get sourceFilesVariable="${filelistonsrcserver}" destinationDir="${system.job.workspace}" whenFileExists="overwrite" destinationFilesVariable="filelistonworkspace" numFilesDownloadedVariable="filelistonworkspacenum" />
+		</sftp>
+		<createFileList label="Create FileList from workspace" fileListVariable="filelistonworkspace" numFilesFoundVariable="filelistonworkspacenum" version="1.0" disabled="false">
+			<fileset dir="${system.job.workspace}" recursive="false" includeItems="files" />
+		</createFileList>
+		<callProject label="Call Archieve files Project" project="/project-functions-templates/Archive_Files" runInSameJob="true" inheritUserVariables="true" returnUserVariables="true" mode="batch" version="1.0" />		
+		<sftp label="SFTP to I92122" resourceId="I92122" keyLocation="KeyVault" version="1.0">
+			<put sourceFilesVariable="${filelistonworkspace} - &lt;remove it if fiile set is required &gt;" destinationDir="/targetpath/recieve/datain" destinationFilesVariable="listofprocessedfiles" numFilesUploadedVariable="listofprocessedfilesnum">
+				<fileset dir="${system.job.workspace}" recursive="false" includeItems="files">
+					<regexFilter>
+						<include pattern="&lt;pattern&gt;" caseSensitive="true" />
+					</regexFilter>
+				</fileset>
+			</put>
+		</sftp>
+		<delete label="Delete processed files in above Copy task" inputFilesVariable="${listofprocessedfiles}" version="1.0" />
+                <deleteWorkspace version="1.0" />
+                <sftp label="SFTP connect to E91232" resourceId="E91232" version="1.0">
+			<delete inputFilesVariable="${filelistonsrcserver}" />
+		</sftp>
+		<callProject label="Call TransferSuccessData Project" project="/project-functions-templates/TransferSuccessData" runInSameJob="true" inheritUserVariables="true" returnUserVariables="true" mode="batch" version="1.0" />
+	</module>
+	<module name="TransferFailure" description="This module calls Project DataError">
+		<setVariable label="Error Message" name="errormsg" value="${system.job.error}" version="2.0" />
+		<print label="Print FileTrack" file="${MFT_Logs}/${CurrentDate(&apos;ddMMyyyy&apos;)}_TransferFiletracking.csv" append="true" version="1.0" disabled="false">
+			<![CDATA[FILETRACK,${CurrentTimestamp('yyyy-MM-dd HH:mm:ss')},${system.job.id},${system.project.name},${filetrack}${system.lineFeed}]]>
+		</print>
+		<callProject label="Call TransferFailed Project" project="/project-functions-templates/TransferFailedData" runInSameJob="true" inheritUserVariables="true" mode="batch" version="1.0" />
+		<raiseError version="1.0" />
+	</module>
+</project>
