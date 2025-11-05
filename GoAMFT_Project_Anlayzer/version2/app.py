@@ -12,7 +12,7 @@ if uploaded_file:
     xml_content = uploaded_file.read().decode("utf-8")
     try:
         parsed_actions = parse_project_xml(xml_content)
-        st.subheader("📋 Parsed Actions")
+        #st.subheader("📋 Parsed Actions")
         #st.json(parsed_actions)
 
         if "summary" not in st.session_state:
