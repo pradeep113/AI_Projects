@@ -1,0 +1,4 @@
+
+openai
+fpdf
+fpdf2
