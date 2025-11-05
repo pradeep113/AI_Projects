@@ -13,7 +13,7 @@ client = AzureOpenAI(
 )
 
 def summarize_actions(actions):
-    prompt = f"""Summarize the following GoAnywhere project actions. Group by module, explain each action briefly, and highlight key details like source/target paths, protocols (SFTP, Blob, MQ), file patterns, archive steps, deletions, and post-transfer actions. Format as readable text and include a table in such a way that this data does not show module name . Table shows sequence of action with source type/protocol/path details ,target type/protocol/path details , file pattern so that it may use it to understand clearly or to use to develop in any other tool from scratch :
+    prompt = f"""Summarize the following GoAnywhere project actions. Group by module, explain each action briefly in sequence of xml, and highlight key details like source/target paths, protocols (SFTP, Blob, MQ), file patterns, archive steps, deletions, and post-transfer actions. Format as readable text and include a table in such a way that this shows sequence of action with source type/protocol/path details ,target type/protocol/path details , file pattern so that it may use it to understand clearly or to use to develop in any other tool from scratch. Module is not needed in table :
 
 {actions}
 """
