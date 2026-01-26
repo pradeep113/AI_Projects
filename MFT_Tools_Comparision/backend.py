@@ -23,7 +23,7 @@ client = AzureOpenAI(
 )
 
 # 🔍 Comparison function
-def get_comparison(prompt: str, tools: list) -> str:
+def get_comparison(prompt: str, tools: list):
     try:
         tool_list = ", ".join(tools)
         full_prompt = (
@@ -49,7 +49,8 @@ def get_comparison(prompt: str, tools: list) -> str:
         df = parse_markdown_table(raw_text)
         return raw_text, df
     except Exception as e:
-        return f"❌ Error: {str(e)}"
+        # Always return a tuple
+        return f"❌ Error: {str(e)}", pd.DataFrame()
 
 def parse_markdown_table(markdown: str) -> pd.DataFrame:
     lines = [line.strip() for line in markdown.splitlines() if "|" in line]
