@@ -3,7 +3,6 @@ openai
 python-dotenv
 openpyxl
 FPDF
-azure 
 azure-identity 
 azure-ai-projects 
 azure-core 
