@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from io import BytesIO
 from backend import get_comparison
-from fpdf import FPDF
 
 st.set_page_config(page_title="MFT Tool Comparator", layout="centered")
 st.title("🔐 MFT Tool Comparison Assistant")
@@ -26,40 +25,7 @@ with st.expander("🧰 Select MFT Tools to Compare"):
 selected_tools = [tool for tool, checked in tools.items() if checked]
 
 # 📝 Prompt input
-user_prompt = st.text_area(
-    "Your Requirements",
-    placeholder="e.g., SFTP, FTPS support, cloud integration like SharePoint, MQ, S3 or Blob"
-)
-
-# Helper: PDF creation
-def create_pdf(result_text, result_df):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-
-    # Add raw text
-    pdf.multi_cell(0, 10, "MFT Tool Comparison Result\n\n" + result_text)
-
-    # Add table if available
-    if not result_df.empty:
-        pdf.ln(10)
-        pdf.set_font("Arial", size=10)
-        col_width = pdf.w / (len(result_df.columns) + 1)
-
-        # Header
-        for col in result_df.columns:
-            pdf.cell(col_width, 10, col, border=1)
-        pdf.ln()
-
-        # Rows
-        for _, row in result_df.iterrows():
-            for item in row:
-                pdf.cell(col_width, 10, str(item), border=1)
-            pdf.ln()
-
-    buffer = BytesIO()
-    pdf.output(buffer)
-    return buffer.getvalue()
+user_prompt = st.text_area("Your Requirements", placeholder="e.g., SFTP,FTPS support, cloud integration like sharepoint, MQ, S3 or blob")
 
 # 🚀 Submit button
 if st.button("Compare Tools"):
@@ -70,7 +36,6 @@ if st.button("Compare Tools"):
     else:
         with st.spinner("Generating comparison..."):
             result_text, result_df = get_comparison(user_prompt, selected_tools)
-
             st.markdown("### 🧾 Comparison Result")
             st.write(result_text)
 
@@ -78,7 +43,6 @@ if st.button("Compare Tools"):
                 st.markdown("### 📊 Structured Comparison Table")
                 st.dataframe(result_df)
 
-                # Excel export
                 buffer = BytesIO()
                 with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
                     result_df.to_excel(writer, index=False, sheet_name="MFT Comparison")
@@ -88,15 +52,5 @@ if st.button("Compare Tools"):
                     file_name="mft_comparison.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
-
-                # PDF export
-                pdf_bytes = create_pdf(result_text, result_df)
-                st.download_button(
-                    label="📄 Download PDF",
-                    data=pdf_bytes,
-                    file_name="mft_comparison.pdf",
-                    mime="application/pdf"
-                )
             else:
                 st.info("No structured table found in the response.")
-
