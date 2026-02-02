@@ -2,7 +2,7 @@ import streamlit as st
 from backend import run_agent_workflow
 
 st.set_page_config(page_title="Azure Foundry Agent Runner", layout="centered")
-st.title("🤖 Azure Foundry Agent Workflow Executor")
+st.title("🤖 Agentic Workflow Executor")
 
 # Prompt input
 user_prompt = st.text_area("Enter your prompt", placeholder="e.g., Compare MFT tools with HIPAA compliance")
