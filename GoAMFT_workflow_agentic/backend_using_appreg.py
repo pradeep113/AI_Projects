@@ -17,7 +17,8 @@ FOUNDARY_AGENT_NAME = st.secrets["FOUNDARY_AGENT_NAME"]
 # Create credential and client
 credential = ClientSecretCredential(tenant_id, client_id, client_secret)
 project_client = AIProjectClient(endpoint=FOUNDARY_ENDPOINT, credential=credential)
-openai_client = project_client.get_openai_client()
+#openai_client = project_client.get_openai_client()
+openai_client = project_client.get_openai_client("2025-11-15-preview")
 
 def run_agent_workflow(prompt: str) -> str:
     """Send a prompt to the Foundry agent and return its response."""
