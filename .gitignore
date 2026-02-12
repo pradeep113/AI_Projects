@@ -135,6 +135,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+MFT_Tools_Comparision/.streamlit/
 
 # Spyder project settings
 .spyderproject

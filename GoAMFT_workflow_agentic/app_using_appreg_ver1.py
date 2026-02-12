@@ -6,7 +6,7 @@ from backend_using_appreg import run_agent_workflow
 
 st.title(" GoA Agent Workflow App")
 
-prompt = st.text_area("Enter your prompt:", height=150)
+prompt = st.text_area("Enter your workflow Requirement:", height=150, value="Example: Create a workflow to transfer files from SFTP to SFTP with archive.")
 
 
 def extract_valid_xml_blocks(response_text: str, tag: str):

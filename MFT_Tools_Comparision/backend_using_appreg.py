@@ -31,3 +31,4 @@ def run_agent_workflow(prompt: str) -> str:
         logger.exception("Error calling Foundry agent")
         return f"❌ Error: {e}"
 
+

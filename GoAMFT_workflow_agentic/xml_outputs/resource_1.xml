@@ -1,0 +1,44 @@
+<resource class="com.linoma.ga.projects.resources.SSHResource">
+	<primaryContactName>John</primaryContactName>
+	<primaryContactPhone />
+	<primaryContactEmail>john@xyz.com</primaryContactEmail>
+	<resourceName>SAP_SFTP_RESOURCE</resourceName>
+	<domainName>Default</domainName>
+	<host>sapsftp@xyz.com</host>
+	<port>22022</port>
+	<user>saptestuser</user>
+	<password>SAP_SFTP_PASSWORD</password>
+	<passwordIsEncrypted>true</passwordIsEncrypted>
+	<passwordIsRecoverable>false</passwordIsRecoverable>
+	<keyLocation>KeyVault</keyLocation>
+	<keyVault />
+	<privateKeyAlias />
+	<keyPassword />
+	<keyPasswordIsEncrypted />
+	<privateKeyFile />
+	<privateKeyPassword />
+	<privateKeyPasswordIsEncrypted />
+	<privateKeyPasswordIsRecoverable />
+	<rsaSignatureAlgorithm />
+	<hostKey />
+	<timeout>120</timeout>
+	<connectionRetryAttempts>3</connectionRetryAttempts>
+	<connectionRetryInterval>10</connectionRetryInterval>
+	<initialRemoteDirectory />
+	<throttleBandwidth />
+	<proxyType />
+	<proxyHost />
+	<alternateProxyHost />
+	<proxyPort />
+	<proxyUser />
+	<proxyPassword />
+	<proxyPasswordIsEncrypted />
+	<proxyPasswordIsRecoverable />
+	<resolveAtProxy />
+	<authenticationAlgorithms>publickey,password</authenticationAlgorithms>
+	<hostKeyAlgorithms />
+	<cipherAlgorithms />
+	<macAlgorithms />
+	<keyExchangeAlgorithms />
+	<compressionAlgorithms />
+</resource>

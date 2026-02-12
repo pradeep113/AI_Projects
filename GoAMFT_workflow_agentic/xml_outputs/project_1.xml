@@ -1,0 +1,84 @@
+<project name="SFTP_TO_SFTP_WITH_ARCHIVE" mainModule="Main" version="2.0" logLevel="silent" threadSafe="false">
+
+	<module name="Main" logLevel="normal" onError="call:Error Handler File Failure">
+
+		<createWorkspace version="1.0" />
+
+		<!-- Variables -->
+		<setVariable label="var interface" name="interface" value="INTERFACE_NAME" version="2.0" />
+		<setVariable label="var sourcesystem" name="sourcesystem" value="SOURCE_SYSTEM" version="2.0" />
+		<setVariable label="var targetsystem" name="targetsystem" value="TARGET_SYSTEM" version="2.0" />
+		<setVariable label="var sourceserver" name="sourceserver" value="SOURCE_SFTP_RESOURCE" version="2.0" />
+		<setVariable label="var sourcepath" name="sourcepath" value="SOURCE_PATH" version="2.0" />
+		<setVariable label="var targetserver" name="targetserver" value="TARGET_SFTP_RESOURCE" version="2.0" />
+		<setVariable label="var targetpath" name="targetpath" value="TARGET_PATH" version="2.0" />
+		<setVariable label="var filepattern" name="filepattern" value="FILE_PATTERN" version="2.0" />
+		<setVariable label="var archive" name="archive" value="YES" version="2.0" />
+		<setVariable label="var archivepath" name="archivepath" value="ARCHIVE_PATH" version="2.0" />
+
+		<!-- Detect files on SFTP source -->
+		<sftp label="SFTP to source" resourceId="${sourceserver}" keyLocation="KeyVault" version="1.0" disabled="false">
+			<list fileListVariable="filelistonsrcserver" numFilesFoundVariable="filelistonsrcservernum">
+				<fileset dir="${sourcepath}" recursive="false" includeItems="files">
+					<wildcardFilter>
+						<include pattern="${filepattern}" caseSensitive="true" />
+					</wildcardFilter>
+				</fileset>
+			</list>
+		</sftp>
+
+		<!-- Exit if no files found -->
+		<exitProject label="EXIT if No Files" version="1.0" executeOnlyIf="${filelistonsrcservernum eq 0}" disabled="false" />
+
+		<!-- Print detected files -->
+		<setVariable label="var srcfiledetails" name="srcfiledetails" value="${system.emptyString}" version="2.0" />
+		<print label="Print Detect filelist" version="1.0">
+			<![CDATA[
+*********************************************************************
+${filelistonsrcservernum} files detected on Source 
+${srcfiledetails}
+*********************************************************************
+]]>
+		</print>
+
+		<!-- Conditional for archive -->
+		<if label="archive check" condition="${archive == 'YES' || archive == 'Y'}">
+
+			<!-- Get files from source SFTP to workspace -->
+			<sftp label="Get files from source SFTP" resourceId="${sourceserver}" keyLocation="KeyVault" version="1.0">
+				<get sourceFilesVariable="${filelistonsrcserver}" destinationDir="${system.job.workspace}" whenFileExists="overwrite" />
+			</sftp>
+
+			<!-- Put files from workspace to target SFTP -->
+			<sftp label="Put files to target SFTP" resourceId="${targetserver}" keyLocation="KeyVault" version="1.0">
+				<put destinationDir="${targetpath}">
+					<fileset dir="${system.job.workspace}" recursive="false" includeItems="files" />
+				</put>
+			</sftp>
+
+			<!-- Move files on source SFTP to archive path -->
+			<sftp label="Move files to Archive on Source SFTP" resourceId="${sourceserver}" keyLocation="KeyVault" version="1.0">
+				<move sourceFilesVariable="${filelistonsrcserver}" destinationDir="${archivepath}" />
+			</sftp>
+
+		</if>
+
+		<deleteWorkspace version="1.0" />
+
+	</module>
+
+	<module name="Error Handler File Failure" disabled="false">
+
+		<print version="1.0">
+			<![CDATA[**JOB FAILED**
+${system.job.error}]]>
+		</print>
+
+		<deleteWorkspace version="1.0" />
+
+		<raiseError version="1.0" />
+
+	</module>
+
+	<description>SFTP to SFTP file transfer with archive</description>
+</project>
