@@ -1,7 +1,8 @@
 import logging
+import os
 import streamlit as st
+import httpx
 from azure.identity import ClientSecretCredential
-from azure.ai.projects import AIProjectClient
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -13,28 +14,35 @@ client_secret = st.secrets["AZURE_CLIENT_SECRET"]
 
 FOUNDARY_ENDPOINT = st.secrets["FOUNDARY_ENDPOINT"]  # base URL only
 FOUNDARY_AGENT_NAME = st.secrets["FOUNDARY_AGENT_NAME"]
+PROJECT_NAME = st.secrets.get("FOUNDARY_PROJECT_NAME", "GoAMFT_workflow_agentic")
+API_VERSION = st.secrets.get("OPENAI_API_VERSION", "2025-11-15-preview")
 
-# Create credential and project client
+# Azure credential
 credential = ClientSecretCredential(tenant_id, client_id, client_secret)
-project_client = AIProjectClient(endpoint=FOUNDARY_ENDPOINT, credential=credential)
-
-# Get the OpenAI client
-openai_client = project_client.get_openai_client()
 
 def run_agent_workflow(prompt: str) -> str:
-    """Send a prompt to the Foundry agent and return its response."""
+    """Send a prompt to the Foundry agent via direct REST call and return its response."""
     try:
-        response = openai_client.responses.create(
-            input=[{"role": "user", "content": prompt}],
-            extra_body={
-                "agent": {
-                    "name": FOUNDARY_AGENT_NAME,
-                    "type": "agent_reference",
-                    "version": "latest"
-                }
-            },
-        )
-        return getattr(response, "output_text", "No response text")
+        # Construct the agent endpoint URL
+        url = f"{FOUNDARY_ENDPOINT}/api/projects/{PROJECT_NAME}/agents/{FOUNDARY_AGENT_NAME}/responses?api-version={API_VERSION}"
+
+        # Get a bearer token for Cognitive Services
+        token = credential.get_token("https://cognitiveservices.azure.com/.default").token
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+
+        body = {
+            "input": [{"role": "user", "content": prompt}],
+            "version": "latest"
+        }
+
+        resp = httpx.post(url, headers=headers, json=body, timeout=60)
+        resp.raise_for_status()
+
+        data = resp.json()
+        return data.get("output_text", str(data))
     except Exception as e:
         logger.exception("Error calling Foundry agent")
         return f"❌ Error: {e}"
