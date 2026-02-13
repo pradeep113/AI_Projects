@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from io import BytesIO
-from backend_using_appreg import run_agent_workflow
+from backend_using_appreg_test import run_agent_workflow
 
 st.set_page_config(page_title="MFT Tool Comparator", layout="centered")
 st.title("🔐 MFT Tool Comparison Assistant")
@@ -37,7 +37,6 @@ if st.button("Compare Tools"):
     elif not user_prompt.strip():
         st.warning("Please enter your requirements.")
     else:
-        # Build prompt for agent
         combined_prompt = (
             f"Compare the following MFT tools: {', '.join(selected_tools)} "
             f"based on these requirements: {user_prompt}"
@@ -52,7 +51,7 @@ if st.button("Compare Tools"):
         # Export options
         st.markdown("### 📤 Export Options")
 
-        # Export to text file
+        # TXT export
         st.download_button(
             label="Download as TXT",
             data=comparison_result,
@@ -60,7 +59,7 @@ if st.button("Compare Tools"):
             mime="text/plain"
         )
 
-        # Export to Markdown file
+        # Markdown export
         try:
             md_buffer = BytesIO(comparison_result.encode("utf-8"))
             st.download_button(
@@ -72,21 +71,22 @@ if st.button("Compare Tools"):
         except Exception as e:
             st.error(f"❌ Markdown export failed: {e}")
 
-        # Export to HTML file
+        # HTML export with table handling
         try:
-            html_content = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <title>MFT Comparison</title>
-            </head>
-            <body>
-                <h1>MFT Tool Comparison Result</h1>
-                <pre>{comparison_result}</pre>
-            </body>
-            </html>
-            """
+            html_content = "<!DOCTYPE html><html><head><meta charset='utf-8'><title>MFT Comparison</title></head><body>"
+            html_content += "<h1>MFT Tool Comparison Result</h1>"
+
+            # Try to detect tabular structure
+            try:
+                # If the response looks like CSV/Markdown table, attempt to parse
+                df = pd.read_csv(BytesIO(comparison_result.encode("utf-8")), sep="|", engine="python")
+                html_content += df.to_html(index=False, escape=False)
+            except Exception:
+                # Fallback: render as preformatted text
+                html_content += f"<pre>{comparison_result}</pre>"
+
+            html_content += "</body></html>"
+
             html_buffer = BytesIO(html_content.encode("utf-8"))
             st.download_button(
                 label="Download as HTML",
