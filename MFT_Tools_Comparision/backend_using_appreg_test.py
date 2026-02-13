@@ -18,18 +18,22 @@ FOUNDARY_AGENT_NAME = st.secrets["FOUNDARY_AGENT_NAME"]
 credential = ClientSecretCredential(tenant_id, client_id, client_secret)
 project_client = AIProjectClient(endpoint=FOUNDARY_ENDPOINT, credential=credential)
 
+# Get the OpenAI client for responses
+openai_client = project_client.get_openai_client()
+
 def run_agent_workflow(prompt: str) -> str:
     """Send a prompt to the Foundry agent and return its response."""
     try:
-        # Get the agent reference from the project
-        agent = project_client.agents.get(FOUNDARY_AGENT_NAME)
-
-        # Call the agent’s response endpoint
-        response = agent.responses.create(
+        response = openai_client.responses.create(
             input=[{"role": "user", "content": prompt}],
-            extra_body={"version": "latest"}  # ensures you don’t hit version-related 404s
+            extra_body={
+                "agent": {
+                    "name": FOUNDARY_AGENT_NAME,
+                    "type": "agent_reference",
+                    "version": "latest"  # ensures you don’t hit version-related 404s
+                }
+            },
         )
-
         return getattr(response, "output_text", "No response text")
     except Exception as e:
         logger.exception("Error calling Foundry agent")
